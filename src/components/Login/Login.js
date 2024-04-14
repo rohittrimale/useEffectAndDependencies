@@ -1,58 +1,112 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
+import { act } from "react-dom/test-utils";
 
+const emailReducer = (state, action) => {
+  if (action.type === "USER_INPUT") {
+    return { value: action.val, isVaild: action.val.includes("@") };
+  }
+  if (action.type === "USER_BLUR") {
+    return { value: state.value, isVaild: state.value.includes("@") };
+  }
+  return { value: "", isVaild: false };
+};
+
+const passwordReducer = (state, action) => {
+  if (action.type === "USER_PASS") {
+    return { value: action.val, isVaild: action.val.trim().length > 6 };
+  }
+  if (action.type === "USER_BLUR") {
+    return { value: state.value, isVaild: state.value.trim().length > 6 };
+  }
+  return { value: "", isVaild: false };
+};
+
+const collageReducer = (state, action) => {
+  if (action.type === "USER_COLLAGE") {
+    return {
+      value: action.val,
+      isVaild: action.val.trim().length > 0,
+    };
+  }
+  if (action.type === "USER_BLUR") {
+    return {
+      value: state.value,
+      isVaild: state.value.trim().length > 0,
+    };
+  }
+  return { value: "", isVaild: "" };
+};
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState("");
-  const [emailIsValid, setEmailIsValid] = useState();
-  const [enteredCollageName, setEnteredCollageName] = useState("");
-  const [collageNameISVaild, setEnteredCollageISVaild] = useState();
-  const [enteredPassword, setEnteredPassword] = useState("");
-  const [passwordIsValid, setPasswordIsValid] = useState();
+  // const [enteredEmail, setEnteredEmail] = useState("");
+  // const [emailIsValid, setEmailIsValid] = useState();
+  // const [enteredCollageName, setEnteredCollageName] = useState("");
+  // const [collageNameISVaild, setEnteredCollageISVaild] = useState();
+  // const [enteredPassword, setEnteredPassword] = useState("");
+  // const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
+
+  const [emailState, despatchEmail] = useReducer(emailReducer, {
+    value: "",
+    isVaild: false,
+  });
+
+  const [passwrodState, dispatchPassword] = useReducer(passwordReducer, {
+    value: "",
+    isVaild: false,
+  });
+
+  const [collageState, dispatchCollage] = useReducer(collageReducer, {
+    value: "",
+    isVaild: false,
+  });
+
   useEffect(() => {
     setTimeout(() => {
       console.log("Heyy");
       setFormIsValid(
-        enteredEmail.includes("@") && enteredPassword.trim().length > 6
+        emailState.isVaild && passwrodState.isVaild && collageState.isVaild
       );
     }, 500);
 
     return () => {};
-  }, [enteredEmail, enteredPassword]);
+  }, [emailState, passwrodState, collageState]);
 
   const emailChangeHandler = (event) => {
-    setEnteredEmail(event.target.value);
+    despatchEmail({ type: "USER_INPUT", val: event.target.value });
   };
 
   const collageNameChangeHandler = (event) => {
-    setEnteredCollageName(event.target.value);
+    dispatchCollage({ type: "USER_COLLAGE", val: event.target.value });
   };
   const passwordChangeHandler = (event) => {
-    setEnteredPassword(event.target.value);
+    // setEnteredPassword(event.target.value);
+
+    dispatchPassword({ type: "USER_PASS", val: event.target.value });
 
     setFormIsValid(
-      event.target.value.trim().length > 6 && enteredEmail.includes("@")
+      emailState.isVaild && passwrodState.isVaild && collageState.isVaild
     );
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes("@"));
+    despatchEmail({ type: "USER_BLUR" });
   };
 
   const validateCollageNameHandler = () => {
-    setEnteredCollageISVaild(enteredCollageName.length === 0);
+    dispatchCollage({ type: "USER_BLUR" });
   };
 
   const validatePasswordHandler = () => {
-    setPasswordIsValid(enteredPassword.trim().length > 6);
+    dispatchPassword({ type: "USER_BLUR" });
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(emailState.value, passwrodState.value);
   };
 
   return (
@@ -60,42 +114,42 @@ const Login = (props) => {
       <form onSubmit={submitHandler}>
         <div
           className={`${classes.control} ${
-            emailIsValid === false ? classes.invalid : ""
+            emailState.isVaild === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={emailState.value}
             onChange={emailChangeHandler}
             onBlur={validateEmailHandler}
           />
         </div>
         <div
           className={`${classes.control} ${
-            setEnteredCollageISVaild === false ? classes.invalid : ""
+            collageState.isVaild === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="collageName">Collage Name</label>
           <input
             type="text"
             id="collageName"
-            value={enteredCollageName}
+            value={collageState.value}
             onChange={collageNameChangeHandler}
             onBlur={validateCollageNameHandler}
           />
         </div>
         <div
           className={`${classes.control} ${
-            passwordIsValid === false ? classes.invalid : ""
+            passwrodState.isVaild === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            value={enteredPassword}
+            value={passwrodState.value}
             onChange={passwordChangeHandler}
             onBlur={validatePasswordHandler}
           />
