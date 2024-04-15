@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, {
+  useState,
+  useEffect,
+  useReducer,
+  useContext,
+  useRef,
+} from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
@@ -45,6 +51,10 @@ const Login = (props) => {
   const [formIsValid, setFormIsValid] = useState(false);
   const authCtx = useContext(AuthContext);
 
+  const emailInputRef = useRef();
+  const collageNameInputRef = useRef();
+  const passwordInputRef = useRef();
+
   const [emailState, dispatchEmail] = useReducer(emailReducer, {
     value: "",
     isVaild: false,
@@ -72,7 +82,15 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    authCtx.onLogin(emailState.value, passwordState.value);
+    if (formIsValid) {
+      authCtx.onLogin(emailState.value, passwordState.value);
+    } else if (!emailState.isVaild) {
+      emailInputRef.current.focus();
+    } else if (!collageState.isVaild) {
+      collageNameInputRef.current.focus();
+    } else {
+      passwordInputRef.current.focus();
+    }
   };
 
   return (
@@ -85,6 +103,7 @@ const Login = (props) => {
         >
           <label htmlFor="email">E-Mail</label>
           <InputData
+            ref={emailInputRef}
             id="email"
             ondispatch={dispatchEmail}
             stateValue={emailState.value}
@@ -99,6 +118,7 @@ const Login = (props) => {
         >
           <label htmlFor="collageName">Collage Name</label>
           <InputData
+            ref={collageNameInputRef}
             id="collageName"
             ondispatch={dispatchCollage}
             stateValue={collageState.value}
@@ -113,6 +133,7 @@ const Login = (props) => {
         >
           <label htmlFor="password">Password</label>
           <InputData
+            ref={passwordInputRef}
             id="password"
             ondispatch={dispatchPassword}
             stateValue={passwordState.value}
@@ -121,7 +142,7 @@ const Login = (props) => {
           />
         </div>
         <div className={classes.actions}>
-          <Button type="submit" className={classes.btn} disabled={!formIsValid}>
+          <Button type="submit" className={classes.btn}>
             Login
           </Button>
         </div>
