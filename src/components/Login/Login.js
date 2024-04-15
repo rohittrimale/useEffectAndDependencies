@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useContext } from "react";
 
 import Card from "../UI/Card/Card";
 import classes from "./Login.module.css";
 import Button from "../UI/Button/Button";
-import { act } from "react-dom/test-utils";
+import AuthContext from "../Store/auth-context";
+import InputData from "../../InputData";
 
-const emailReducer = (state, action) => {
+export const emailReducer = (state, action) => {
   if (action.type === "USER_INPUT") {
     return { value: action.val, isVaild: action.val.includes("@") };
   }
@@ -41,20 +42,15 @@ const collageReducer = (state, action) => {
   return { value: "", isVaild: "" };
 };
 const Login = (props) => {
-  // const [enteredEmail, setEnteredEmail] = useState("");
-  // const [emailIsValid, setEmailIsValid] = useState();
-  // const [enteredCollageName, setEnteredCollageName] = useState("");
-  // const [collageNameISVaild, setEnteredCollageISVaild] = useState();
-  // const [enteredPassword, setEnteredPassword] = useState("");
-  // const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
+  const authCtx = useContext(AuthContext);
 
-  const [emailState, despatchEmail] = useReducer(emailReducer, {
+  const [emailState, dispatchEmail] = useReducer(emailReducer, {
     value: "",
     isVaild: false,
   });
 
-  const [passwrodState, dispatchPassword] = useReducer(passwordReducer, {
+  const [passwordState, dispatchPassword] = useReducer(passwordReducer, {
     value: "",
     isVaild: false,
   });
@@ -66,47 +62,17 @@ const Login = (props) => {
 
   useEffect(() => {
     setTimeout(() => {
-      console.log("Heyy");
       setFormIsValid(
-        emailState.isVaild && passwrodState.isVaild && collageState.isVaild
+        emailState.isVaild && passwordState.isVaild && collageState.isVaild
       );
     }, 500);
 
     return () => {};
-  }, [emailState, passwrodState, collageState]);
-
-  const emailChangeHandler = (event) => {
-    despatchEmail({ type: "USER_INPUT", val: event.target.value });
-  };
-
-  const collageNameChangeHandler = (event) => {
-    dispatchCollage({ type: "USER_COLLAGE", val: event.target.value });
-  };
-  const passwordChangeHandler = (event) => {
-    // setEnteredPassword(event.target.value);
-
-    dispatchPassword({ type: "USER_PASS", val: event.target.value });
-
-    setFormIsValid(
-      emailState.isVaild && passwrodState.isVaild && collageState.isVaild
-    );
-  };
-
-  const validateEmailHandler = () => {
-    despatchEmail({ type: "USER_BLUR" });
-  };
-
-  const validateCollageNameHandler = () => {
-    dispatchCollage({ type: "USER_BLUR" });
-  };
-
-  const validatePasswordHandler = () => {
-    dispatchPassword({ type: "USER_BLUR" });
-  };
+  }, [emailState, passwordState, collageState]);
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, passwrodState.value);
+    authCtx.onLogin(emailState.value, passwordState.value);
   };
 
   return (
@@ -118,12 +84,12 @@ const Login = (props) => {
           }`}
         >
           <label htmlFor="email">E-Mail</label>
-          <input
-            type="email"
+          <InputData
             id="email"
-            value={emailState.value}
-            onChange={emailChangeHandler}
-            onBlur={validateEmailHandler}
+            ondispatch={dispatchEmail}
+            stateValue={emailState.value}
+            stateType={"USER_INPUT"}
+            inputType="email"
           />
         </div>
         <div
@@ -132,26 +98,26 @@ const Login = (props) => {
           }`}
         >
           <label htmlFor="collageName">Collage Name</label>
-          <input
-            type="text"
+          <InputData
             id="collageName"
-            value={collageState.value}
-            onChange={collageNameChangeHandler}
-            onBlur={validateCollageNameHandler}
+            ondispatch={dispatchCollage}
+            stateValue={collageState.value}
+            stateType={"USER_COLLAGE"}
+            inputType="text"
           />
         </div>
         <div
           className={`${classes.control} ${
-            passwrodState.isVaild === false ? classes.invalid : ""
+            passwordState.isVaild === false ? classes.invalid : ""
           }`}
         >
           <label htmlFor="password">Password</label>
-          <input
-            type="password"
+          <InputData
             id="password"
-            value={passwrodState.value}
-            onChange={passwordChangeHandler}
-            onBlur={validatePasswordHandler}
+            ondispatch={dispatchPassword}
+            stateValue={passwordState.value}
+            stateType={"USER_PASS"}
+            inputType="password"
           />
         </div>
         <div className={classes.actions}>
